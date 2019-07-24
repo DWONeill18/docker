@@ -1,0 +1,46 @@
+version: '3.7'
+
+volumes:
+  mongo:
+  jenkins_home:
+
+services:
+
+  api:
+    image: api:latest
+    build: ./TeamAPoolProjectBackend/
+    depends_on:
+    - mongo
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    volumes:
+    - type: volume
+      source: mongo
+      target: /data/db
+  ui:
+    image: ui:latest
+    build: ./TeamAPoolProjectUI/
+    ports:
+    - target: 80
+      published: 80
+      protocol: tcp
+    depends_on:
+    - api
+    - jenkins
+
+  jenkins:
+    image: bobcrutchley/jenkins:latest
+    volumes:
+    - type: volume
+      source: jenkins_home
+      target: /usr/jenkins_home
+    - type: bind
+      source: /var/run/docker.sock
+      target: /var/run/docker.sock
+    environment:
+    - JENKINS_OPTS="-prefix=jenkins" 
+
+
+
